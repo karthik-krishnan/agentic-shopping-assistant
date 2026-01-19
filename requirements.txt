@@ -1,0 +1,2 @@
+crewai[azure-ai-inference]==1.8.1
+python-dotenv==1.1.1
