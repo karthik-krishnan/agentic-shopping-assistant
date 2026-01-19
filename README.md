@@ -54,13 +54,12 @@ A multi-agent product recommendation system built with [CrewAI](https://github.c
 
 4. **Configure environment variables**
 
-   Create a `.env` file with your Azure OpenAI credentials:
+   Copy the example file and fill in your Azure OpenAI credentials:
+   ```bash
+   cp .env.example .env
    ```
-   AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
-   AZURE_OPENAI_API_KEY=your-api-key
-   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-   AZURE_OPENAI_API_VERSION=2024-02-15-preview
-   ```
+
+   Then edit `.env` with your values.
 
 ## Usage
 
