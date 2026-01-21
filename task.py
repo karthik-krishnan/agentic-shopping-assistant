@@ -31,41 +31,48 @@ def validate_research_response(result: TaskOutput) -> Tuple[bool, Any]:
     return (True, result)
 
 
-product_task = Task(
-    description="""Identify running shoes from our catalog that match these criteria:
-    - Waterproof or water-resistant
-    - Priced under $100
+def create_tasks(user_query: str):
+    """Create tasks based on user's product search query."""
+    product_task = Task(
+        description=f"""Identify products from our catalog that match the user's request:
+        "{user_query}"
 
-    Provide the product names, key features, and prices.""",
-    expected_output="A list of waterproof running shoes under $100 with their features and prices.",
-    agent=product_expert,
-    guardrail=validate_product_response,
-    guardrail_max_retries=2
-)
+        Provide the product names, key features, and prices.""",
+        expected_output=f"A list of products matching '{user_query}' with their features and prices.",
+        agent=product_expert,
+        guardrail=validate_product_response,
+        guardrail_max_retries=2
+    )
 
-research_task = Task(
-    description="""Research customer reviews and feedback for waterproof running shoes.
-    Focus on:
-    - Common praise points (comfort, durability, waterproofing effectiveness)
-    - Common complaints or issues
-    - Overall customer satisfaction ratings
+    research_task = Task(
+        description=f"""Research customer reviews and feedback for products matching:
+        "{user_query}"
 
-    Provide a summary of findings that would help a customer make a decision.""",
-    expected_output="A summary of customer reviews highlighting pros, cons, and ratings for waterproof running shoes.",
-    agent=research_agent,
-    guardrail=validate_research_response,
-    guardrail_max_retries=2
-)
+        Focus on:
+        - Common praise points (quality, durability, value)
+        - Common complaints or issues
+        - Overall customer satisfaction ratings
 
-synthesis_task = Task(
-    description="""Combine the product recommendations and research findings to provide
-    a final recommendation. Consider:
-    - Product features and specifications
-    - Customer feedback and satisfaction
-    - Value for money
+        Provide a summary of findings that would help a customer make a decision.""",
+        expected_output=f"A summary of customer reviews highlighting pros, cons, and ratings for '{user_query}'.",
+        agent=research_agent,
+        guardrail=validate_research_response,
+        guardrail_max_retries=2
+    )
 
-    Provide a prioritized recommendation with clear reasoning.""",
-    expected_output="A final recommendation combining product details with customer feedback, ranked by overall value.",
-    agent=product_expert,
-    context=[product_task, research_task]
-)
+    synthesis_task = Task(
+        description=f"""Combine the product recommendations and research findings to provide
+        a final recommendation for the user's request: "{user_query}"
+
+        Consider:
+        - Product features and specifications
+        - Customer feedback and satisfaction
+        - Value for money
+
+        Provide a prioritized recommendation with clear reasoning.""",
+        expected_output="A final recommendation combining product details with customer feedback, ranked by overall value.",
+        agent=product_expert,
+        context=[product_task, research_task]
+    )
+
+    return product_task, research_task, synthesis_task

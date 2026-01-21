@@ -19,7 +19,7 @@ product_expert = Agent(
     You have deep knowledge of product features, materials, and technical specifications.
     You provide accurate product recommendations based on customer needs.""",
     llm=llm,
-    verbose=True,
+    verbose=False,
     allow_delegation=True
 )
 
@@ -30,7 +30,7 @@ research_agent = Agent(
     and customer feedback. You analyze sentiment, identify common praise and complaints,
     and summarize findings to help customers make informed decisions.""",
     llm=llm,
-    verbose=True,
+    verbose=False,
     allow_delegation=True
 )
 
@@ -42,6 +42,6 @@ manager_agent = Agent(
     and real customer feedback. You synthesize information from multiple sources
     to provide the best possible guidance to customers.""",
     llm=llm,
-    verbose=True,
+    verbose=False,
     allow_delegation=True
 )

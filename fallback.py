@@ -38,7 +38,7 @@ FALLBACK_RESPONSES = {
 
 
 def execute_with_fallback(crew, inputs: dict = None, max_retries: int = 2,
-                          fallback_type: str = "general") -> Any:
+                          fallback_type: str = "general", logger=None) -> Any:
     """
     Execute a crew with retry logic and fallback responses.
 
@@ -47,45 +47,43 @@ def execute_with_fallback(crew, inputs: dict = None, max_retries: int = 2,
         inputs: Optional inputs to pass to crew.kickoff()
         max_retries: Maximum number of retry attempts (default: 2)
         fallback_type: Type of fallback response to use on failure
+        logger: Optional logger for output
 
     Returns:
         Crew result on success, FallbackResponse on failure
     """
+    def log(msg, level="info"):
+        if logger:
+            getattr(logger, level)(msg)
+        else:
+            print(msg)
+
     last_error = None
 
     for attempt in range(max_retries):
         try:
-            print(f"\n{'='*50}")
-            print(f"Execution attempt {attempt + 1} of {max_retries}")
-            print(f"{'='*50}\n")
+            log(f"  Attempt {attempt + 1}/{max_retries}...")
 
             if inputs:
                 result = crew.kickoff(inputs=inputs)
             else:
                 result = crew.kickoff()
 
-            print(f"\n{'='*50}")
-            print("Execution completed successfully!")
-            print(f"{'='*50}\n")
-
+            log("  Execution completed!")
             return result
 
         except Exception as e:
             last_error = e
-            print(f"\n{'!'*50}")
-            print(f"Attempt {attempt + 1} failed: {type(e).__name__}: {str(e)}")
-            print(f"{'!'*50}\n")
+            log(f"  Attempt {attempt + 1} failed: {type(e).__name__}", "warning")
+            log(f"  Error details: {str(e)}", "debug")
 
             if attempt < max_retries - 1:
-                wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s...
-                print(f"Retrying in {wait_time} seconds...")
+                wait_time = 2 ** attempt
+                log(f"  Retrying in {wait_time}s...")
                 time.sleep(wait_time)
 
-    # All retries exhausted, return fallback response
-    print(f"\n{'#'*50}")
-    print("All retry attempts exhausted. Returning fallback response.")
-    print(f"Last error: {last_error}")
-    print(f"{'#'*50}\n")
+    log("All retries exhausted. Using fallback.", "warning")
+    log(f"Last error: {last_error}", "debug")
 
     return get_fallback_response(fallback_type, error=last_error)
 
@@ -111,22 +109,3 @@ def get_fallback_response(fallback_type: str = "general",
     return response
 
 
-def log_task_completion(output) -> None:
-    """Callback for logging task completions."""
-    print(f"\n{'~'*50}")
-    print("Task Completed")
-    print(f"{'~'*50}")
-    if hasattr(output, 'description'):
-        print(f"Task: {output.description[:100]}...")
-    if hasattr(output, 'raw'):
-        preview = output.raw[:200] if len(output.raw) > 200 else output.raw
-        print(f"Output preview: {preview}...")
-    print(f"{'~'*50}\n")
-
-
-def log_agent_step(step_output) -> None:
-    """Callback for logging individual agent steps."""
-    print(f"\n[Step] Agent action recorded")
-    if hasattr(step_output, 'output'):
-        preview = str(step_output.output)[:100]
-        print(f"[Step] Output: {preview}...")
